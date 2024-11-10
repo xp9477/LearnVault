@@ -28,7 +28,6 @@ await (await dbPromise).exec(`
     imageUrl TEXT NOT NULL,
     shareLink TEXT NOT NULL,
     platform TEXT NOT NULL,
-    outline TEXT,
     createdAt TEXT NOT NULL
   )
 `);
@@ -91,8 +90,8 @@ app.post('/api/courses', async (req, res) => {
     const db = await dbPromise;
     const course = req.body;
     await db.run(
-      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, outline, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [course.id, course.title, course.category, course.imageUrl, course.shareLink, course.platform, JSON.stringify(course.outline), course.createdAt]
+      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [course.id, course.title, course.category, course.imageUrl, course.shareLink, course.platform, course.createdAt]
     );
     res.status(201).json(course);
   } catch (error) {
@@ -158,14 +157,13 @@ app.put('/api/courses/:id', async (req, res) => {
     const db = await dbPromise;
     const course = req.body;
     await db.run(
-      'UPDATE courses SET title = ?, category = ?, imageUrl = ?, shareLink = ?, platform = ?, outline = ?, createdAt = ? WHERE id = ?',
+      'UPDATE courses SET title = ?, category = ?, imageUrl = ?, shareLink = ?, platform = ?, createdAt = ? WHERE id = ?',
       [
         course.title,
         course.category,
         course.imageUrl,
         course.shareLink,
         course.platform,
-        JSON.stringify(course.outline),
         course.createdAt,
         req.params.id
       ]

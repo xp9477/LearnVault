@@ -101,7 +101,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         shareLink: formData.shareLink,
         platform: formData.platform,
         createdAt: initialData?.createdAt || new Date().toISOString(),
-        outline: initialData?.outline || [],
       };
 
       if (initialData) {
@@ -208,7 +207,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         </div>
         {formData.platform && (
           <span className="mt-1 inline-block px-2 py-1 bg-blue-50 text-blue-600 text-sm rounded">
-            已识别: {formData.platform === 'quark' ? '夸克网盘' : formData.platform === 'aliyun' ? '阿里网盘' : '百度网盘'}
+            已识别: {formData.platform === 'quark' ? '夸克网盘' : formData.platform === 'aliyun' ? '阿里网盘' : '百度网���'}
           </span>
         )}
       </div>

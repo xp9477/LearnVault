@@ -5,7 +5,6 @@ export interface Course {
   imageUrl: string;
   shareLink: string;
   platform: 'quark' | 'aliyun' | 'baidu';
-  outline: string[];
   createdAt: string;
 }
 

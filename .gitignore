@@ -26,3 +26,6 @@ dist-ssr
 # 上传文件目录
 /server/uploads/*
 !/server/uploads/default-course-image.jpg
+
+# 数据库文件
+database.sqlite
