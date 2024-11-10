@@ -18,7 +18,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
     shareLink: initialData?.shareLink || '',
     platform: initialData?.platform || '' as Course['platform'],
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(initialData?.imageUrl || '');
   const [error, setError] = useState('');
   const { categories } = useCategories();
@@ -41,15 +40,16 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         });
 
         if (!response.ok) {
-          throw new Error('上传失败');
+          const errorData = await response.json();
+          throw new Error(errorData.error || '上传失败');
         }
 
         const data = await response.json();
         setPreviewUrl(`http://localhost:3000${data.imageUrl}`);
         setError('');
       } catch (err) {
-        setError('图片上传失败');
-        console.error(err);
+        setError(err instanceof Error ? err.message : '图片上传失败');
+        console.error('上传错误:', err);
       }
     }
   };
@@ -73,37 +73,37 @@ export default function CourseForm({ initialData }: CourseFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     
-    if (!formData.title.trim()) {
-      setError('请输入课程标题');
-      return;
-    }
-    if (!formData.category) {
-      setError('请选择课程分类');
-      return;
-    }
-    if (!formData.shareLink) {
-      setError('请输入分享链接');
-      return;
-    }
-    if (!formData.platform) {
-      setError('无法识别网盘平台，请查链接');
-      return;
-    }
-    if (!imageFile && !previewUrl) {
-      setError('请上传课程封面');
-      return;
-    }
-
-    const courseData: Course = {
-      id: initialData?.id || Date.now().toString(),
-      ...formData,
-      imageUrl: previewUrl || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee',
-      createdAt: initialData?.createdAt || new Date().toISOString(),
-      outline: initialData?.outline || [],
-    };
-
     try {
+      if (!formData.title.trim()) {
+        setError('请输入课程标题');
+        return;
+      }
+      if (!formData.category) {
+        setError('请选择课程分类');
+        return;
+      }
+      if (!formData.shareLink) {
+        setError('请输入分享链接');
+        return;
+      }
+      if (!formData.platform) {
+        setError('无法识别网盘平台，请检查链接');
+        return;
+      }
+
+      const courseData: Course = {
+        id: initialData?.id || Date.now().toString(),
+        title: formData.title,
+        category: formData.category,
+        imageUrl: previewUrl || 'http://localhost:3000/uploads/default-course-image.jpg',
+        shareLink: formData.shareLink,
+        platform: formData.platform,
+        createdAt: initialData?.createdAt || new Date().toISOString(),
+        outline: initialData?.outline || [],
+      };
+
       if (initialData) {
         await updateCourse(initialData.id, courseData);
       } else {
@@ -111,7 +111,8 @@ export default function CourseForm({ initialData }: CourseFormProps) {
       }
       navigate('/');
     } catch (err) {
-      setError('保存失败，请重试');
+      console.error('保存失败:', err);
+      setError(err instanceof Error ? err.message : '保存失败，请重试');
     }
   };
 
@@ -169,7 +170,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
               <button
                 type="button"
                 onClick={() => {
-                  setImageFile(null);
                   setPreviewUrl('');
                 }}
                 className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-100"

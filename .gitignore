@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 上传文件目录
+/server/uploads/*
+!/server/uploads/default-course-image.jpg

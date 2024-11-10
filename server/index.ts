@@ -4,6 +4,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,6 +41,38 @@ await (await dbPromise).exec(`
     icon TEXT NOT NULL
   )
 `);
+
+// 配置文件上传
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'uploads'))
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, uniqueSuffix + path.extname(file.originalname))
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB 限制
+  }
+});
+
+// 添加文件上传路由
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '没有上传文件' });
+    }
+    res.json({ 
+      imageUrl: '/uploads/' + req.file.filename 
+    });
+  } catch (error) {
+    res.status(500).json({ error: '文件上传失败' });
+  }
+});
 
 // 获取所有课程
 app.get('/api/courses', async (req, res) => {
@@ -116,6 +149,41 @@ app.delete('/api/categories/:id', async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: '删除分类失败' });
+  }
+});
+
+// 更新课程
+app.put('/api/courses/:id', async (req, res) => {
+  try {
+    const db = await dbPromise;
+    const course = req.body;
+    await db.run(
+      'UPDATE courses SET title = ?, category = ?, imageUrl = ?, shareLink = ?, platform = ?, outline = ?, createdAt = ? WHERE id = ?',
+      [
+        course.title,
+        course.category,
+        course.imageUrl,
+        course.shareLink,
+        course.platform,
+        JSON.stringify(course.outline),
+        course.createdAt,
+        req.params.id
+      ]
+    );
+    res.json(course);
+  } catch (error) {
+    res.status(500).json({ error: '更新课程失败' });
+  }
+});
+
+// 删除课程
+app.delete('/api/courses/:id', async (req, res) => {
+  try {
+    const db = await dbPromise;
+    await db.run('DELETE FROM courses WHERE id = ?', [req.params.id]);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: '删除课程失败' });
   }
 });
 
