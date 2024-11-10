@@ -12,7 +12,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2">
             <BookOpen className="w-8 h-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">学习平台</span>
+            <span className="text-xl font-bold text-gray-900">LearnVault</span>
           </Link>
           
           <div className="flex items-center space-x-4">

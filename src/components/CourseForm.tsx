@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Upload, Link as LinkIcon, X } from 'lucide-react';
+import { Upload, X, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '../types';
 import { useCategories } from '../context/CategoryContext';
 import { useCourses } from '../context/CourseContext';
+import { quarkParser, aliyunParser, baiduParser } from '../utils/parsers';
 
 interface CourseFormProps {
   initialData?: Course;
@@ -21,6 +22,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   const [previewUrl, setPreviewUrl] = useState(initialData?.imageUrl || '');
   const [error, setError] = useState('');
   const { categories } = useCategories();
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,20 +57,117 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   };
 
   const detectPlatform = (link: string): Course['platform'] | null => {
-    if (link.includes('quark')) return 'quark';
-    if (link.includes('aliyun')) return 'aliyun';
-    if (link.includes('baidu')) return 'baidu';
+    const normalizedLink = link.trim().toLowerCase();
+    
+    if (
+      normalizedLink.includes('pan.quark.cn') || 
+      normalizedLink.includes('pan-quark.cn')
+    ) {
+      return 'quark';
+    }
+    
+    if (
+      normalizedLink.includes('aliyundrive.com') || 
+      normalizedLink.includes('alipan.com')
+    ) {
+      return 'aliyun';
+    }
+    
+    if (
+      normalizedLink.includes('pan.baidu.com') || 
+      normalizedLink.includes('yun.baidu.com')
+    ) {
+      return 'baidu';
+    }
+    
+    return null;
+  };
+
+  const validateShareLink = (link: string): string | null => {
+    if (!link) {
+      return '请输入分享链接';
+    }
+
+    try {
+      new URL(link);
+    } catch {
+      return '请输入有效的网址';
+    }
+
+    const platform = detectPlatform(link);
+    if (!platform) {
+      return '目前仅支持夸克网盘、阿里云盘和百度网盘的分享链接';
+    }
+
     return null;
   };
 
   const handleShareLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const link = e.target.value;
-    const platform = detectPlatform(link);
     setFormData(prev => ({
       ...prev,
       shareLink: link,
+    }));
+    
+    // 清除之前的错误
+    setLinkError(null);
+    
+    // 如果链接为空，不进行验证
+    if (!link.trim()) {
+      return;
+    }
+    
+    // 验证链接
+    const error = validateShareLink(link);
+    if (error) {
+      setLinkError(error);
+      return;
+    }
+    
+    // 设置平台
+    const platform = detectPlatform(link);
+    setFormData(prev => ({
+      ...prev,
       platform: platform || prev.platform
     }));
+  };
+
+  const handleParseLinkClick = async () => {
+    if (!formData.shareLink) {
+      setLinkError('请输入分享链接');
+      return;
+    }
+
+    try {
+      const url = formData.shareLink.trim();
+      let parser;
+
+      if (quarkParser.validate(url)) {
+        parser = quarkParser;
+      } else if (aliyunParser.validate(url)) {
+        parser = aliyunParser;
+      } else if (baiduParser.validate(url)) {
+        parser = baiduParser;
+      }
+
+      if (!parser) {
+        setLinkError('不支持的网盘链接格式');
+        return;
+      }
+
+      const info = await parser.parse(url);
+      
+      // 更新表单数据
+      setFormData(prev => ({
+        ...prev,
+        shareLink: info.validUrl,
+        title: info.title || prev.title, // 如果解析出标题则使用
+      }));
+      
+      setLinkError(null);
+    } catch (error) {
+      setLinkError('链接解析失败');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,14 +299,29 @@ export default function CourseForm({ initialData }: CourseFormProps) {
             type="text"
             value={formData.shareLink}
             onChange={handleShareLinkChange}
-            placeholder="请输入夸克网盘、阿里网盘或百度网盘的分享链接"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="请输入分享链接"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-24"
           />
-          <LinkIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <button
+            type="button"
+            onClick={handleParseLinkClick}
+            className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+          >
+            <Search className="w-4 h-4 mr-1" />
+            解析
+          </button>
         </div>
-        {formData.platform && (
+        {linkError && (
+          <p className="mt-1 text-sm text-red-600">{linkError}</p>
+        )}
+        {formData.platform && !linkError && (
           <span className="mt-1 inline-block px-2 py-1 bg-blue-50 text-blue-600 text-sm rounded">
-            已识别: {formData.platform === 'quark' ? '夸克网盘' : formData.platform === 'aliyun' ? '阿里网盘' : '百度网���'}
+            已识别: {
+              formData.platform === 'quark' ? '夸克网盘' : 
+              formData.platform === 'aliyun' ? '阿里云盘' : 
+              formData.platform === 'baidu' ? '百度网盘' :
+              '未知平台'
+            }
           </span>
         )}
       </div>
