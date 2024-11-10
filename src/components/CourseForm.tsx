@@ -18,6 +18,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
     category: initialData?.category || '',
     shareLink: initialData?.shareLink || '',
     platform: initialData?.platform || '' as Course['platform'],
+    password: initialData?.password || '',
   });
   const [previewUrl, setPreviewUrl] = useState(initialData?.imageUrl || '');
   const [error, setError] = useState('');
@@ -133,6 +134,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   };
 
   const handleParseLinkClick = async () => {
+    console.log('点击解析按钮');
     if (!formData.shareLink) {
       setLinkError('请输入分享链接');
       return;
@@ -140,13 +142,17 @@ export default function CourseForm({ initialData }: CourseFormProps) {
 
     try {
       const url = formData.shareLink.trim();
+      console.log('解析链接:', url);
       let parser;
 
       if (quarkParser.validate(url)) {
+        console.log('使用夸克网盘解析器');
         parser = quarkParser;
       } else if (aliyunParser.validate(url)) {
+        console.log('使用阿里云盘解析器');
         parser = aliyunParser;
       } else if (baiduParser.validate(url)) {
+        console.log('使用百度网盘解析器');
         parser = baiduParser;
       }
 
@@ -155,18 +161,21 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         return;
       }
 
-      const info = await parser.parse(url);
+      console.log('开始解析链接...');
+      const info = await parser.parse(url, formData.password);
+      console.log('解析结果:', info);
       
-      // 更新表单数据
       setFormData(prev => ({
         ...prev,
         shareLink: info.validUrl,
-        title: info.title || prev.title, // 如果解析出标题则使用
+        title: info.title || prev.title,
+        password: info.password || prev.password,
       }));
       
       setLinkError(null);
     } catch (error) {
-      setLinkError('链接解析失败');
+      console.error('解析错误:', error);
+      setLinkError(error instanceof Error ? error.message : '链接解析失败');
     }
   };
 
@@ -324,6 +333,19 @@ export default function CourseForm({ initialData }: CourseFormProps) {
             }
           </span>
         )}
+        
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            分享密码
+          </label>
+          <input
+            type="text"
+            value={formData.password}
+            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+            placeholder="请输入分享密码(选填)"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
       </div>
 
       <button
