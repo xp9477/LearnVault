@@ -10,4 +10,4 @@ docker run -d \
   -p 3000:3000 \
   -e QUARK_COOKIE="你的夸克网盘Cookie" \
   -e NODE_ENV=production \
-  learn-vault
+  xp9477/learn-vault:latest
