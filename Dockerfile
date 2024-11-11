@@ -3,15 +3,15 @@ FROM node:20-alpine as builder
 
 WORKDIR /app
 
-# 复制所有 package.json 文件
-COPY package*.json ./
-COPY server/package*.json ./server/
+# 首先复制 package.json 文件
+COPY package.json ./
+COPY server/package.json ./server/
 
 # 安装依赖
-RUN npm ci
-RUN cd server && npm ci && cd ..
+RUN npm ci && \
+    cd server && npm ci && cd ..
 
-# 复制源代码
+# 复制其余源代码
 COPY . .
 
 # 构建
@@ -22,8 +22,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 安装生产环境依赖
-COPY server/package*.json ./server/
+# 复制服务器端 package.json 并安装生产依赖
+COPY --from=builder /app/server/package.json ./server/
 RUN cd server && npm ci --only=production
 
 # 复制构建产物
