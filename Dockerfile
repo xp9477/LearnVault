@@ -7,15 +7,14 @@ RUN apk add --no-cache python3 make g++ git
 WORKDIR /app
 
 # 设置 npm 配置
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm config set loglevel verbose
+RUN npm config set registry https://registry.npmmirror.com
 
 # 分别复制并安装主项目和服务器的依赖
 COPY package*.json ./
-RUN npm ci --verbose
+RUN npm ci
 
 COPY server/package*.json ./server/
-RUN cd server && npm ci --verbose && cd ..
+RUN cd server && npm ci && cd ..
 
 # 复制其余源代码
 COPY . .
@@ -26,11 +25,17 @@ RUN npm run build
 # 运行阶段
 FROM node:20-alpine
 
+# 添加运行时依赖
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # 复制服务器端 package.json 并安装生产依赖
-COPY --from=builder /app/server/package.json ./server/
-RUN cd server && npm ci --only=production
+COPY --from=builder /app/server/package*.json ./server/
+WORKDIR /app/server
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm ci --only=production
+WORKDIR /app
 
 # 复制构建产物
 COPY --from=builder /app/dist ./dist

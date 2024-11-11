@@ -5,9 +5,12 @@
    - `QUARK_COOKIE`: "夸克网盘的 cookie" -->
 
 ## 使用 Docker 运行
+
+```bash
 docker run -d \
   --name learn-vault \
-  -p 3000:3000 \
+  -p 5173:5173 \
   -e QUARK_COOKIE="你的夸克网盘Cookie" \
   -e NODE_ENV=production \
   xp9477/learn-vault:latest
+```
