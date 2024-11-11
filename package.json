@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "cd server && npm install && npm start",
-    "start": "concurrently \"npm run dev\" \"npm run server\""
+    "start": "concurrently \"npm run dev\" \"npm run server\"",
+    "prod": "cd server && NODE_ENV=production npm start"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",

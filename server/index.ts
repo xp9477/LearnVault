@@ -99,26 +99,12 @@ app.get('/api/courses', async (req, res) => {
 app.post('/api/courses', async (req, res) => {
   try {
     const db = await dbPromise;
-    const course = {
-      ...req.body,
-      watchedEpisodes: 0 // 新课程默认观看集数为0
-    };
+    const course = req.body;
+    console.log('收到的课程数据:', course);
     
     await db.run(
-      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, password, teacher, createdAt, totalEpisodes, watchedEpisodes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-        course.id, 
-        course.title, 
-        course.category, 
-        course.imageUrl, 
-        course.shareLink, 
-        course.platform, 
-        course.password, 
-        course.teacher, 
-        course.createdAt,
-        course.totalEpisodes,
-        course.watchedEpisodes
-      ]
+      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, password, teacher, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [course.id, course.title, course.category, course.imageUrl, course.shareLink, course.platform, course.password, course.teacher, course.createdAt]
     );
     res.status(201).json(course);
   } catch (error) {
@@ -246,6 +232,16 @@ app.post('/api/quark/token', async (req, res) => {
     });
   }
 });
+
+if (process.env.NODE_ENV === 'production') {
+  // 服务前端静态文件
+  app.use(express.static(path.join(__dirname, '../dist')));
+  
+  // 所有未匹配的路由都返回 index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+  });
+}
 
 const port = 3000;
 app.listen(port, () => {
