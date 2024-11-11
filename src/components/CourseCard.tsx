@@ -11,7 +11,7 @@ export default function CourseCard({ course }: CourseCardProps) {
   const { deleteCourse } = useCourses();
   const platformLabels = {
     quark: '夸克网盘',
-    aliyun: '阿里网盘',
+    aliyun: '阿里云盘',
     baidu: '百度网盘',
   };
 
@@ -47,14 +47,16 @@ export default function CourseCard({ course }: CourseCardProps) {
           </div>
         </div>
         <div className="space-y-2">
-          <span className="inline-block px-3 py-1 rounded-full text-sm bg-blue-50 text-blue-600">
-            {platformLabels[course.platform]}
-          </span>
+          <div className="flex items-center gap-2">
           {course.teacher && (
-            <div className="text-sm text-gray-500">
-              授课老师：{course.teacher}
-            </div>
-          )}
+              <span className="text-sm text-gray-500">
+                {course.teacher}
+              </span>
+            )}
+            <span className="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full">
+              {platformLabels[course.platform]}
+            </span>
+          </div>
           <div className="text-sm text-gray-500">
             创建时间：{new Date(course.createdAt).toLocaleDateString()}
           </div>
