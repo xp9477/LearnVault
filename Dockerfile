@@ -1,29 +1,43 @@
+# 构建阶段
+FROM node:20-alpine as builder
+
+WORKDIR /app
+
+# 复制 package.json 文件
+COPY package*.json ./
+COPY server/package*.json ./server/
+
+# 安装依赖并构建
+RUN npm ci && \
+    cd server && npm ci && cd .. && \
+    npm run build
+
+# 运行阶段
 FROM node:20-alpine
 
 WORKDIR /app
 
-# 复制 package.json
-COPY package*.json ./
+# 安装生产环境依赖
 COPY server/package*.json ./server/
+RUN cd server && npm ci --only=production
 
-# 安装依赖
-RUN npm install && \
-    cd server && npm install
+# 复制构建产物
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server ./server
 
-# 复制源代码
-COPY . .
+# 创建必要的目录并设置权限
+RUN mkdir -p server/uploads /data && \
+    chown -R node:node /data . && \
+    chmod -R 755 server/uploads
 
-# 创建必要的目录
-RUN mkdir -p server/uploads && \
-    mkdir -p /data && \
-    chown -R node:node /data && \
-    chown -R node:node .
-
+# 使用非 root 用户
 USER node
 
-EXPOSE 3000
+# 设置环境变量
+ENV NODE_ENV=production
 
-# 设置数据库路径环境变量
-ENV DB_PATH=/data/database.sqlite
+# 暴露前端端口
+EXPOSE 5173
 
-CMD ["npm", "run", "server"]
+# 启动命令
+CMD ["node", "--loader", "ts-node/esm", "server/index.ts"]
