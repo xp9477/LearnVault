@@ -8,8 +8,8 @@ COPY package.json ./
 COPY server/package.json ./server/
 
 # 安装依赖
-RUN npm ci && \
-    cd server && npm ci && cd ..
+RUN npm ci --verbose && \
+    cd server && npm ci --verbose && cd ..
 
 # 复制其余源代码
 COPY . .
