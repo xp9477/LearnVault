@@ -10,7 +10,9 @@
 docker run -d \
   --name learn-vault \
   -p 5173:5173 \
+  -v learn-vault-data:/data \
   -e QUARK_COOKIE="你的夸克网盘Cookie" \
   -e NODE_ENV=production \
+  -e DB_PATH=/data/database.sqlite \
   xp9477/learn-vault:latest
 ```

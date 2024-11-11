@@ -44,17 +44,18 @@ COPY --from=builder /app/server ./server
 
 # 创建必要的目录并设置权限
 RUN mkdir -p server/uploads /data && \
-    chown -R node:node /data . && \
-    chmod -R 755 server/uploads
+    chown -R node:node /data server/uploads && \
+    chmod -R 755 /data server/uploads
 
 # 使用非 root 用户
 USER node
 
 # 设置环境变量
 ENV NODE_ENV=production
+ENV DB_PATH=/data/database.sqlite
 
-# 暴露前端端口
-EXPOSE 5173
+# 暴露前端和后端端口
+EXPOSE 3000 5173
 
-# 启动命令
-CMD ["node", "--loader", "ts-node/esm", "server/index.ts"]
+# 修改启动命令
+CMD ["sh", "-c", "cd server && NODE_ENV=production npm start"]
