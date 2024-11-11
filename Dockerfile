@@ -1,15 +1,21 @@
 # 构建阶段
 FROM node:20-alpine as builder
 
+# 添加构建依赖
+RUN apk add --no-cache python3 make g++ git
+
 WORKDIR /app
 
-# 首先复制 package.json 文件
-COPY package.json ./
-COPY server/package.json ./server/
+# 设置 npm 配置
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm config set loglevel verbose
 
-# 安装依赖
-RUN npm ci --verbose && \
-    cd server && npm ci --verbose && cd ..
+# 分别复制并安装主项目和服务器的依赖
+COPY package*.json ./
+RUN npm ci --verbose
+
+COPY server/package*.json ./server/
+RUN cd server && npm ci --verbose && cd ..
 
 # 复制其余源代码
 COPY . .
