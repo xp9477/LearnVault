@@ -14,7 +14,9 @@ const app = express();
 
 // 配置 CORS
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite 开发服务器的默认地址
+  origin: process.env.NODE_ENV === 'production' 
+    ? '*'  // 生产环境允许所有源
+    : 'http://localhost:5173', // 开发环境
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -244,6 +246,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const port = 3000;
-app.listen(port, () => {
-  console.log(`服务器运行在 http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`服务器运行在 http://0.0.0.0:${port}`);
 });

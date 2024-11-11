@@ -39,7 +39,10 @@ export default function CourseForm({ initialData }: CourseFormProps) {
       formData.append('image', file);
 
       try {
-        const response = await fetch('http://localhost:3000/api/upload', {
+        const uploadUrl = process.env.NODE_ENV === 'production'
+          ? '/api/upload'
+          : 'http://localhost:3000/api/upload';
+        const response = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
         });
@@ -50,7 +53,9 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         }
 
         const data = await response.json();
-        setPreviewUrl(`http://localhost:3000${data.imageUrl}`);
+        setPreviewUrl(process.env.NODE_ENV === 'production'
+          ? data.imageUrl
+          : `http://localhost:3000${data.imageUrl}`);
         setError('');
       } catch (err) {
         setError(err instanceof Error ? err.message : '图片上传失败');
@@ -207,7 +212,9 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         id: initialData?.id || Date.now().toString(),
         title: formData.title,
         category: formData.category,
-        imageUrl: previewUrl || 'http://localhost:3000/uploads/default-course-image.jpg',
+        imageUrl: previewUrl || (process.env.NODE_ENV === 'production' 
+          ? '/uploads/default-course-image.jpg'
+          : 'http://localhost:3000/uploads/default-course-image.jpg'),
         shareLink: formData.shareLink,
         platform: formData.platform,
         password: formData.password,

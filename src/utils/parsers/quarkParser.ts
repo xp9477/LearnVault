@@ -20,7 +20,10 @@ export const quarkParser: Parser = {
     
     try {
       console.log('发送网络请求...');
-      const response = await fetch('http://localhost:3000/api/quark/token', {
+      const apiUrl = process.env.NODE_ENV === 'production'
+        ? '/api/quark/token'
+        : 'http://localhost:3000/api/quark/token';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
