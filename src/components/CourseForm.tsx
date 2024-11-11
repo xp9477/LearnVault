@@ -20,6 +20,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
     platform: initialData?.platform || '' as Course['platform'],
     password: initialData?.password || '',
     teacher: initialData?.teacher || '',
+    totalEpisodes: initialData?.totalEpisodes || '',
   });
   const [previewUrl, setPreviewUrl] = useState(initialData?.imageUrl || '');
   const [error, setError] = useState('');
@@ -212,6 +213,8 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         password: formData.password,
         teacher: formData.teacher,
         createdAt: initialData?.createdAt || new Date().toISOString(),
+        totalEpisodes: formData.totalEpisodes ? Number(formData.totalEpisodes) : undefined,
+        watchedEpisodes: initialData?.watchedEpisodes || 0,
       };
 
       if (initialData) {
@@ -360,6 +363,23 @@ export default function CourseForm({ initialData }: CourseFormProps) {
           value={formData.teacher}
           onChange={(e) => setFormData(prev => ({ ...prev, teacher: e.target.value }))}
           placeholder="请输入授课老师姓名(选填)"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          视频总集数
+        </label>
+        <input
+          type="number"
+          min="0"
+          value={formData.totalEpisodes}
+          onChange={(e) => setFormData(prev => ({ 
+            ...prev, 
+            totalEpisodes: e.target.value ? parseInt(e.target.value) : '' 
+          }))}
+          placeholder="请输入视频总集数(选填)"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>

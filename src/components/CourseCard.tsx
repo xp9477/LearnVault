@@ -1,4 +1,4 @@
-import { ExternalLink, Trash2, Edit } from 'lucide-react';
+import { ExternalLink, Trash2, Edit, Plus, Minus } from 'lucide-react';
 import type { Course } from '../types';
 import { useCourses } from '../context/CourseContext';
 import { Link } from 'react-router-dom';
@@ -8,7 +8,7 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
-  const { deleteCourse } = useCourses();
+  const { deleteCourse, updateCourse } = useCourses();
   const platformLabels = {
     quark: '夸克网盘',
     aliyun: '阿里云盘',
@@ -18,6 +18,23 @@ export default function CourseCard({ course }: CourseCardProps) {
   const handleDelete = () => {
     if (window.confirm('确定要删除这个课程吗？')) {
       deleteCourse(course.id);
+    }
+  };
+
+  const handleUpdateProgress = async (increment: boolean) => {
+    if (!course.totalEpisodes) return;
+    
+    const newWatchedEpisodes = increment 
+      ? Math.min(course.watchedEpisodes + 1, course.totalEpisodes)
+      : Math.max(course.watchedEpisodes - 1, 0);
+      
+    try {
+      await updateCourse(course.id, {
+        ...course,
+        watchedEpisodes: newWatchedEpisodes
+      });
+    } catch (error) {
+      console.error('更新进度失败:', error);
     }
   };
 
@@ -70,6 +87,39 @@ export default function CourseCard({ course }: CourseCardProps) {
           <ExternalLink className="w-4 h-4 mr-2" />
           开始学习
         </a>
+        {course.totalEpisodes && (
+          <div className="mt-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600">
+                学习进度: {course.watchedEpisodes}/{course.totalEpisodes}
+              </span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleUpdateProgress(false)}
+                  disabled={course.watchedEpisodes === 0}
+                  className="p-1 text-gray-400 hover:text-blue-500 disabled:opacity-50"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleUpdateProgress(true)}
+                  disabled={course.watchedEpisodes === course.totalEpisodes}
+                  className="p-1 text-gray-400 hover:text-blue-500 disabled:opacity-50"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-blue-600 transition-all duration-300"
+                style={{ 
+                  width: `${(course.watchedEpisodes / course.totalEpisodes) * 100}%` 
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

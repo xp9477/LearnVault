@@ -99,12 +99,26 @@ app.get('/api/courses', async (req, res) => {
 app.post('/api/courses', async (req, res) => {
   try {
     const db = await dbPromise;
-    const course = req.body;
-    console.log('收到的课程数据:', course);
+    const course = {
+      ...req.body,
+      watchedEpisodes: 0 // 新课程默认观看集数为0
+    };
     
     await db.run(
-      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, password, teacher, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [course.id, course.title, course.category, course.imageUrl, course.shareLink, course.platform, course.password, course.teacher, course.createdAt]
+      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, password, teacher, createdAt, totalEpisodes, watchedEpisodes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        course.id, 
+        course.title, 
+        course.category, 
+        course.imageUrl, 
+        course.shareLink, 
+        course.platform, 
+        course.password, 
+        course.teacher, 
+        course.createdAt,
+        course.totalEpisodes,
+        course.watchedEpisodes
+      ]
     );
     res.status(201).json(course);
   } catch (error) {
@@ -171,7 +185,7 @@ app.put('/api/courses/:id', async (req, res) => {
     const db = await dbPromise;
     const course = req.body;
     await db.run(
-      'UPDATE courses SET title = ?, category = ?, imageUrl = ?, shareLink = ?, platform = ?, password = ?, teacher = ?, createdAt = ? WHERE id = ?',
+      'UPDATE courses SET title = ?, category = ?, imageUrl = ?, shareLink = ?, platform = ?, password = ?, teacher = ?, createdAt = ?, totalEpisodes = ?, watchedEpisodes = ? WHERE id = ?',
       [
         course.title,
         course.category,
@@ -181,6 +195,8 @@ app.put('/api/courses/:id', async (req, res) => {
         course.password,
         course.teacher,
         course.createdAt,
+        course.totalEpisodes,
+        course.watchedEpisodes,
         req.params.id
       ]
     );

@@ -8,6 +8,8 @@ export interface Course {
   password?: string;
   teacher?: string;
   createdAt: string;
+  totalEpisodes?: number;
+  watchedEpisodes: number;
 }
 
 export interface Category {

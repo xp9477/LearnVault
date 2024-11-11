@@ -6,6 +6,7 @@ interface TableSchema {
     [columnName: string]: {
       type: string;
       required?: boolean;
+      default?: any;
     };
   };
 }
@@ -21,7 +22,9 @@ const schema: TableSchema = {
     platform: { type: 'TEXT', required: true },
     password: { type: 'TEXT' },
     teacher: { type: 'TEXT' },
-    createdAt: { type: 'TEXT', required: true }
+    createdAt: { type: 'TEXT', required: true },
+    totalEpisodes: { type: 'INTEGER' },
+    watchedEpisodes: { type: 'INTEGER', required: true, default: 0 }
   },
   categories: {
     id: { type: 'TEXT', required: true },
