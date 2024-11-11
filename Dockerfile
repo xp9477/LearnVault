@@ -30,12 +30,13 @@ RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 
-# 复制服务器端 package.json 并安装生产依赖
+# 复制 package.json 文件
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/server/package*.json ./server/
-WORKDIR /app/server
+
+# 安装生产依赖
 RUN npm config set registry https://registry.npmmirror.com && \
-    npm ci --only=production
-WORKDIR /app
+    cd server && npm ci --only=production && cd ..
 
 # 复制构建产物
 COPY --from=builder /app/dist ./dist
