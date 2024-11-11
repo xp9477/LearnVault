@@ -24,7 +24,7 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const dbPromise = open({
-  filename: './database.sqlite',
+  filename: process.env.DB_PATH || './database.sqlite',
   driver: sqlite3.Database
 });
 
