@@ -239,6 +239,55 @@ export default function CourseForm({ initialData }: CourseFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
+          网盘分享链接
+        </label>
+        <div className="relative">
+          <input
+            type="text"
+            value={formData.shareLink}
+            onChange={handleShareLinkChange}
+            placeholder="请输入分享链接"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-24"
+          />
+          <button
+            type="button"
+            onClick={handleParseLinkClick}
+            className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+          >
+            <Search className="w-4 h-4 mr-1" />
+            解析
+          </button>
+        </div>
+        {linkError && (
+          <p className="mt-1 text-sm text-red-600">{linkError}</p>
+        )}
+        {formData.platform && !linkError && (
+          <span className="mt-1 inline-block px-2 py-1 bg-blue-50 text-blue-600 text-sm rounded">
+            已识别: {
+              formData.platform === 'quark' ? '夸克网盘' : 
+              formData.platform === 'aliyun' ? '阿里云盘' : 
+              formData.platform === 'baidu' ? '百度网盘' :
+              '未知平台'
+            }
+          </span>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          分享密码
+        </label>
+        <input
+          type="text"
+          value={formData.password}
+          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+          placeholder="请输入分享密码(选填)"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
           课程标题
         </label>
         <input
@@ -252,20 +301,32 @@ export default function CourseForm({ initialData }: CourseFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          课程分类
+          授课老师
         </label>
-        <select
-          value={formData.category}
-          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+        <input
+          type="text"
+          value={formData.teacher}
+          onChange={(e) => setFormData(prev => ({ ...prev, teacher: e.target.value }))}
+          placeholder="请输入授课老师姓名(选填)"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="">请选择分类</option>
-          {categories.map(category => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          视频总集数
+        </label>
+        <input
+          type="number"
+          min="0"
+          value={formData.totalEpisodes}
+          onChange={(e) => setFormData(prev => ({ 
+            ...prev, 
+            totalEpisodes: e.target.value ? parseInt(e.target.value) : '' 
+          }))}
+          placeholder="请输入视频总集数(选填)"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
       </div>
 
       <div>
@@ -307,81 +368,20 @@ export default function CourseForm({ initialData }: CourseFormProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          网盘分享链接
+          课程分类
         </label>
-        <div className="relative">
-          <input
-            type="text"
-            value={formData.shareLink}
-            onChange={handleShareLinkChange}
-            placeholder="请输入分享链接"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-24"
-          />
-          <button
-            type="button"
-            onClick={handleParseLinkClick}
-            className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-          >
-            <Search className="w-4 h-4 mr-1" />
-            解析
-          </button>
-        </div>
-        {linkError && (
-          <p className="mt-1 text-sm text-red-600">{linkError}</p>
-        )}
-        {formData.platform && !linkError && (
-          <span className="mt-1 inline-block px-2 py-1 bg-blue-50 text-blue-600 text-sm rounded">
-            已识别: {
-              formData.platform === 'quark' ? '夸克网盘' : 
-              formData.platform === 'aliyun' ? '阿里云盘' : 
-              formData.platform === 'baidu' ? '百度网盘' :
-              '未知平台'
-            }
-          </span>
-        )}
-        
-        <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            分享密码
-          </label>
-          <input
-            type="text"
-            value={formData.password}
-            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-            placeholder="请输入分享密码(选填)"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          授课老师
-        </label>
-        <input
-          type="text"
-          value={formData.teacher}
-          onChange={(e) => setFormData(prev => ({ ...prev, teacher: e.target.value }))}
-          placeholder="请输入授课老师姓名(选填)"
+        <select
+          value={formData.category}
+          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          视频总集数
-        </label>
-        <input
-          type="number"
-          min="0"
-          value={formData.totalEpisodes}
-          onChange={(e) => setFormData(prev => ({ 
-            ...prev, 
-            totalEpisodes: e.target.value ? parseInt(e.target.value) : '' 
-          }))}
-          placeholder="请输入视频总集数(选填)"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+        >
+          <option value="">请选择分类</option>
+          {categories.map(category => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <button
