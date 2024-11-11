@@ -47,9 +47,15 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(course),
       });
       
-      if (!response.ok) throw new Error('添加课程失败');
-      setCourses(prev => [...prev, course]);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || '添加课程失败');
+      }
+      
+      const savedCourse = await response.json();
+      setCourses(prev => [...prev, savedCourse]);
     } catch (err) {
+      console.error('添加课程错误:', err);
       setError(err instanceof Error ? err.message : '发生未知错误');
       throw err;
     }

@@ -5,6 +5,7 @@ import { open } from 'sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+import { migrateDatabase } from './utils/dbMigration.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,28 +28,29 @@ const dbPromise = open({
   driver: sqlite3.Database
 });
 
-// 创建课程表
-await (await dbPromise).exec(`
-  CREATE TABLE IF NOT EXISTS courses (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    category TEXT NOT NULL,
-    imageUrl TEXT NOT NULL,
-    shareLink TEXT NOT NULL,
-    platform TEXT NOT NULL,
-    password TEXT,
-    createdAt TEXT NOT NULL
-  )
-`);
+// 数据库初始化和迁移
+const initDatabase = async () => {
+  const db = await dbPromise;
+  
+  // 创建基础表结构
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS courses (
+      id TEXT PRIMARY KEY
+    )
+  `);
 
-// 创建分类表
-await (await dbPromise).exec(`
-  CREATE TABLE IF NOT EXISTS categories (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    icon TEXT NOT NULL
-  )
-`);
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS categories (
+      id TEXT PRIMARY KEY
+    )
+  `);
+
+  // 执行数据库迁移
+  await migrateDatabase(db);
+};
+
+// 初始化数据库
+await initDatabase();
 
 // 配置文件上传
 const storage = multer.diskStorage({
@@ -98,12 +100,15 @@ app.post('/api/courses', async (req, res) => {
   try {
     const db = await dbPromise;
     const course = req.body;
+    console.log('收到的课程数据:', course);
+    
     await db.run(
-      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, password, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [course.id, course.title, course.category, course.imageUrl, course.shareLink, course.platform, course.password, course.createdAt]
+      'INSERT INTO courses (id, title, category, imageUrl, shareLink, platform, password, teacher, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [course.id, course.title, course.category, course.imageUrl, course.shareLink, course.platform, course.password, course.teacher, course.createdAt]
     );
     res.status(201).json(course);
   } catch (error) {
+    console.error('添加课程错误:', error);
     res.status(500).json({ error: '添加课程失败' });
   }
 });
@@ -166,7 +171,7 @@ app.put('/api/courses/:id', async (req, res) => {
     const db = await dbPromise;
     const course = req.body;
     await db.run(
-      'UPDATE courses SET title = ?, category = ?, imageUrl = ?, shareLink = ?, platform = ?, password = ?, createdAt = ? WHERE id = ?',
+      'UPDATE courses SET title = ?, category = ?, imageUrl = ?, shareLink = ?, platform = ?, password = ?, teacher = ?, createdAt = ? WHERE id = ?',
       [
         course.title,
         course.category,
@@ -174,6 +179,7 @@ app.put('/api/courses/:id', async (req, res) => {
         course.shareLink,
         course.platform,
         course.password,
+        course.teacher,
         course.createdAt,
         req.params.id
       ]

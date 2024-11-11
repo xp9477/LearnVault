@@ -50,6 +50,11 @@ export default function CourseCard({ course }: CourseCardProps) {
           <span className="inline-block px-3 py-1 rounded-full text-sm bg-blue-50 text-blue-600">
             {platformLabels[course.platform]}
           </span>
+          {course.teacher && (
+            <div className="text-sm text-gray-500">
+              授课老师：{course.teacher}
+            </div>
+          )}
           <div className="text-sm text-gray-500">
             创建时间：{new Date(course.createdAt).toLocaleDateString()}
           </div>

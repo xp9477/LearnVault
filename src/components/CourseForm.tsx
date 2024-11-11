@@ -19,6 +19,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
     shareLink: initialData?.shareLink || '',
     platform: initialData?.platform || '' as Course['platform'],
     password: initialData?.password || '',
+    teacher: initialData?.teacher || '',
   });
   const [previewUrl, setPreviewUrl] = useState(initialData?.imageUrl || '');
   const [error, setError] = useState('');
@@ -208,6 +209,8 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         imageUrl: previewUrl || 'http://localhost:3000/uploads/default-course-image.jpg',
         shareLink: formData.shareLink,
         platform: formData.platform,
+        password: formData.password,
+        teacher: formData.teacher,
         createdAt: initialData?.createdAt || new Date().toISOString(),
       };
 
@@ -346,6 +349,19 @@ export default function CourseForm({ initialData }: CourseFormProps) {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          授课老师
+        </label>
+        <input
+          type="text"
+          value={formData.teacher}
+          onChange={(e) => setFormData(prev => ({ ...prev, teacher: e.target.value }))}
+          placeholder="请输入授课老师姓名(选填)"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
       </div>
 
       <button

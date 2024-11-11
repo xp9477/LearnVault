@@ -6,6 +6,7 @@ export interface Course {
   shareLink: string;
   platform: 'quark' | 'aliyun' | 'baidu';
   password?: string;
+  teacher?: string;
   createdAt: string;
 }
 
